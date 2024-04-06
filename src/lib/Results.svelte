@@ -168,7 +168,7 @@
 <div class="results" style={`grid-column: ${col}; grid-row: ${row}`} bind:this={container}
      class:history-open={historyOpen && !dragging} class:dragging={dragging}>
 
-    <div class="history-wrapper" class:hidden={!historyOpen}>
+    <div class="history-wrapper" class:hidden={!historyOpen && !dragging}>
         <History/>
     </div>
 
@@ -229,6 +229,9 @@
         grid-template-rows: 30% 30% 20% 10%;
 
         background-color: var(--results-color);
+
+        flex-grow: 0;
+        flex-shrink: 0;
     }
 
     .main-results {
@@ -294,7 +297,7 @@
 
     .history-open {
         position: fixed;
-        height: 75% !important;
+        height: 90% !important;
 
         transition: 0.1s;
     }

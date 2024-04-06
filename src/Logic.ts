@@ -264,3 +264,11 @@ export function toggleAngleMode() {
     currentCalculation.set("");
     currentCalculation.set(tmp);
 }
+
+export function addStringAtCursor(string: string){
+    currentCalculation.update((currentCalculationValue) => {
+        return currentCalculationValue.substring(0, caretPosition) + string + currentCalculationValue.substring(caretPosition);
+    });
+
+    caretPosition += string.length;
+}
