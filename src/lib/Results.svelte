@@ -45,6 +45,10 @@
             );
         })
 
+        mainResultsInput.onscroll = () => {
+            updateCaret(selectionStart, selectionEnd);
+        }
+
         prediction.subscribe(value => {
             predictiveResults = value;
         })
@@ -258,6 +262,7 @@
         let fullWidth = calculateTextInInputWidth(mainResultsInput, mainResultsInput.value);
         let right = fullWidth - textWidth;
 
+        right -= (mainResultsInput.scrollWidth - mainResultsInput.offsetWidth) - mainResultsInput.scrollLeft;
 
         caretDiv.style.right = `${right}px`;
         caretDiv.style.height = mainResultsInput.style.fontSize;
@@ -292,7 +297,7 @@
 
         <div class="results-wrapper main-results">
             <div class="main-results" bind:this={mainResultsDiv}>
-                <input type="text" class="results-input" bind:this={mainResultsInput} on:keypress={setCaret} on:click={setCaret} value={calculation} readonly/>
+                <input class="results-input" bind:this={mainResultsInput} on:keypress={setCaret} on:click={setCaret} value={calculation} readonly/>
                 <div class="caret" bind:this={caretDiv} class:hidden={!caretVisible}></div>
             </div>
         </div>
@@ -414,7 +419,7 @@
         padding-left: 1rem;
         padding-right: 1rem;
 
-        overflow-x: auto;
+        overflow-x: hidden;
         overflow-y: hidden;
     }
 
@@ -440,7 +445,7 @@
         top: 50%;
         transform: translateY(-50%);
 
-        background-color: var(--text-color);
+        background-color: var(--clear-text-color);
 
         animation-delay: 2s;
         animation: caret-blink 1s infinite;
@@ -450,7 +455,13 @@
         0% {
             opacity: 1;
         }
+        49.9% {
+            opacity: 1;
+        }
         50% {
+            opacity: 0;
+        }
+        99.9% {
             opacity: 0;
         }
         100% {

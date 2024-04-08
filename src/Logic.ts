@@ -315,3 +315,32 @@ export function setSelection(start: number, end: number){
     selectionStart = start;
     selectionEnd = end;
 }
+
+export function caretLeft(){
+    selectionStart--;
+    selectionEnd = selectionStart;
+
+    if (selectionStart < 0){
+        selectionStart = 0;
+    }
+
+    // update calculation to refresh cursor
+    let tmp = currentCalculationValue;
+    currentCalculation.set("");
+    currentCalculation.set(tmp);
+}
+
+export function caretRight(){
+    selectionStart++;
+
+    if (selectionStart > currentCalculationValue.length){
+        selectionStart = currentCalculationValue.length;
+    }
+
+    selectionEnd = selectionStart;
+
+    // update calculation to refresh cursor
+    let tmp = currentCalculationValue;
+    currentCalculation.set("");
+    currentCalculation.set(tmp);
+}

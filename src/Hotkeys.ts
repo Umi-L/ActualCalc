@@ -1,4 +1,4 @@
-import {addCharacter, calculate, removeCharacter} from "./Logic";
+import {addCharacter, calculate, caretLeft, caretRight, removeCharacter} from "./Logic";
 
 export function registerHotkeys(){
     window.addEventListener("keydown", (event) => {
@@ -46,6 +46,16 @@ export function registerHotkeys(){
         // enter
         if (event.key === "Enter") {
             calculate();
+        }
+
+        // left arrow
+        if (event.key === "ArrowLeft") {
+            caretLeft();
+        }
+
+        // right arrow
+        if (event.key === "ArrowRight") {
+            caretRight();
         }
     });
 }
