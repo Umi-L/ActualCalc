@@ -1,6 +1,13 @@
 <script lang="ts">
     import {onMount} from "svelte";
-    import {currentCalculation, getDisplayString, prediction} from "../Logic";
+    import {
+        currentCalculation,
+        getDisplayString,
+        prediction,
+        selectionEnd,
+        selectionStart,
+        setSelection
+    } from "../Logic";
     import History from "./History.svelte";
 
     export let row: string;
@@ -12,11 +19,14 @@
     let mainResultsDiv: HTMLDivElement;
     let predictiveResultsDiv: HTMLDivElement;
 
-    let mainResultsSpan: HTMLSpanElement;
+    let mainResultsInput: HTMLInputElement;
     let predictiveResultsSpan: HTMLSpanElement;
 
     let container: HTMLDivElement;
     let resultsGridDiv: HTMLDivElement;
+
+    let caretDiv: HTMLDivElement;
+    let caretVisible = false;
 
     let historyOpen = false;
     let dragging = false;
@@ -27,17 +37,30 @@
         currentCalculation.subscribe(value => {
             calculation = getDisplayString(value);
 
-            calculateFontSize();
+            requestAnimationFrame(
+                () => {
+                    calculateFontSize();
+                    updateCaret(selectionStart, selectionEnd);
+                }
+            );
         })
 
         prediction.subscribe(value => {
             predictiveResults = value;
         })
 
+        window.addEventListener("resize", () => {
+            calculateFontSize();
+            updateMainPanelHeight();
+        });
+
+        // on orientation change
+        window.addEventListener("orientationchange", () => {
+            calculateFontSize();
+            updateMainPanelHeight();
+        });
+
         calculateFontSize();
-
-        window.addEventListener("resize", calculateFontSize);
-
         updateMainPanelHeight();
 
         // on drag
@@ -106,7 +129,7 @@
     }
 
     function dragEnd(prevX: number, prevY: number) {
-        dragging=false;
+        dragging = false;
 
         // if y is more than 1/3 of the way down the screen, open history
         if (prevY > window.innerHeight / 2) {
@@ -141,18 +164,17 @@
         let mainFontSize = mainResultsDiv.clientHeight;
         let predictiveFontSize = predictiveResultsDiv.clientHeight;
 
-        // determine how small the font size would need to be to fit span into div
-        while (mainResultsSpan.scrollWidth > mainResultsDiv.clientWidth - 20) {
-            mainFontSize -= 0.1;
-            mainResultsDiv.style.fontSize = `${mainFontSize}px`;
-        }
+        let depth = 0;
 
-        while (predictiveResultsSpan.scrollWidth > predictiveResultsDiv.clientWidth - 20) {
-            predictiveFontSize -= 0.1;
-            predictiveResultsDiv.style.fontSize = `${predictiveFontSize}px`;
-        }
+        let mainResultsTextWidth = calculateTextInInputWidth(mainResultsInput, mainResultsInput.value);
 
-        // console.log(mainFontSize, predictiveFontSize);
+        // set text to be the same width as the input
+        mainResultsInput.style.fontSize = `${mainFontSize}px`;
+        predictiveResultsDiv.style.fontSize = `${predictiveFontSize}px`;
+
+        mainFontSize = adjustFontSize(mainResultsInput, mainResultsDiv, mainFontSize, minFontSize);
+
+        predictiveFontSize = adjustFontSize(predictiveResultsSpan, predictiveResultsDiv, predictiveFontSize, minFontSize);
 
         // set font size to min font size if it is smaller than min font size
         mainFontSize = Math.max(mainFontSize, minFontSize);
@@ -163,6 +185,95 @@
         predictiveResultsDiv.style.fontSize = `${predictiveFontSize}px`;
         predictiveResultsDiv.style.lineHeight = `${predictiveFontSize}px`;
     }
+
+    function adjustFontSize(inputElement: HTMLInputElement | HTMLSpanElement, container: HTMLDivElement, currentFontSize: number, minFontSize: number): number {
+        let left = minFontSize, right = currentFontSize;
+        while (right - left > 0.1) {
+            let mid = (left + right) / 2;
+            inputElement.style.fontSize = `${mid}px`;
+            let textWidth = calculateTextInInputWidth(inputElement, inputElement instanceof HTMLInputElement ? inputElement.value : inputElement.innerText);
+            if (textWidth > container.clientWidth - 20) {
+                right = mid;
+            } else {
+                left = mid;
+            }
+        }
+        return left;
+    }
+
+    function calculateTextInInputWidth(inputElement: HTMLInputElement | HTMLSpanElement, text: string): number {
+
+        if (inputElement instanceof HTMLInputElement) {
+            let tester = document.createElement("span");
+            tester.classList.add("font-tester");
+            tester.innerText = text;
+            tester.style.fontSize = `${inputElement.style.fontSize}`;
+            tester.style.fontWeight = `${inputElement.style.fontWeight}`;
+            tester.style.fontStyle = `${inputElement.style.fontStyle}`;
+            tester.style.fontFamily = `${inputElement.style.fontFamily}`;
+
+            document.body.appendChild(tester);
+
+            let width = tester.clientWidth;
+
+            document.body.removeChild(tester);
+
+            return width;
+        } else if (inputElement instanceof HTMLSpanElement) {
+            let tester = document.createElement("span");
+            tester.classList.add("font-tester");
+            tester.innerText = text;
+            tester.style.fontSize = `${inputElement.style.fontSize}`;
+            tester.style.fontWeight = `${inputElement.style.fontWeight}`;
+            tester.style.fontStyle = `${inputElement.style.fontStyle}`;
+            tester.style.fontFamily = `${inputElement.style.fontFamily}`;
+
+            document.body.appendChild(tester);
+
+            let width = tester.clientWidth;
+
+            document.body.removeChild(tester);
+
+            return width;
+        }
+
+        return 0;
+    }
+
+    function updateCaret(start: number | null, end: number | null){
+        if (start == null || end == null) {
+            return;
+        }
+
+        setSelection(start, end);
+
+        if (start != end) {
+            return;
+        }
+
+        caretVisible = true;
+
+        let text = mainResultsInput.value.substring(0, start);
+        let textWidth = calculateTextInInputWidth(mainResultsInput, text);
+        let fullWidth = calculateTextInInputWidth(mainResultsInput, mainResultsInput.value);
+        let right = fullWidth - textWidth;
+
+
+        caretDiv.style.right = `${right}px`;
+        caretDiv.style.height = mainResultsInput.style.fontSize;
+
+        // reset animation
+        caretDiv.style.animation = "none";
+        void caretDiv.offsetWidth;
+        caretDiv.style.animation = "";
+    }
+
+    function setCaret(){
+        let start = mainResultsInput.selectionStart;
+        let end = mainResultsInput.selectionEnd;
+
+        updateCaret(start, end);
+    }
 </script>
 
 <div class="results" style={`grid-column: ${col}; grid-row: ${row}`} bind:this={container}
@@ -172,12 +283,17 @@
         <History/>
     </div>
 
-    <div class="results-grid" style={(historyOpen || dragging) ? `height: ${mainPanelHeight}px;` : `height: 100%;`} bind:this={resultsGridDiv}>
+    <div class="results-grid" style={(historyOpen || dragging) ? `height: ${mainPanelHeight}px;` : `height: 100%;`}
+         bind:this={resultsGridDiv}>
+
+        <div class="current-expression-text" class:invisible={!historyOpen}>
+            Current expression
+        </div>
+
         <div class="results-wrapper main-results">
             <div class="main-results" bind:this={mainResultsDiv}>
-                <span bind:this={mainResultsSpan}>
-                    {calculation}
-                </span>
+                <input type="text" class="results-input" bind:this={mainResultsInput} on:keypress={setCaret} on:click={setCaret} value={calculation} readonly/>
+                <div class="caret" bind:this={caretDiv} class:hidden={!caretVisible}></div>
             </div>
         </div>
 
@@ -219,7 +335,48 @@
 
         overflow: hidden;
 
-        top:0;
+        top: 0;
+    }
+
+    .results-input {
+        width: 100%;
+        height: 100%;
+
+        background-color: transparent;
+        color: var(--text-color);
+        border: none;
+
+        font-weight: 500;
+        font-style: normal;
+
+        text-align: end;
+
+        padding: 0;
+        margin: 0;
+    }
+
+    .results-input:focus {
+        outline: none;
+    }
+
+    .current-expression-text {
+        width: 100%;
+        height: 100%;
+
+        padding: 1rem;
+
+        font-weight: 400;
+
+        grid-row: 1/2;
+        grid-column: 1/2;
+
+        font-size: 1.2em;
+
+        color: var(--button-text-color);
+
+        opacity: 1;
+
+        transition: 0.1s;
     }
 
     .results-grid {
@@ -242,6 +399,8 @@
         text-align: right;
         text-wrap: none;
         white-space: nowrap;
+
+        position: relative;
     }
 
     .results-wrapper {
@@ -268,12 +427,35 @@
 
         text-align: right;
 
-        text-overflow: ellipsis;
-
         white-space: nowrap;
         overflow: hidden;
 
-        padding-left: 2rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .caret{
+        position: absolute;
+        width: 2px;
+        top: 50%;
+        transform: translateY(-50%);
+
+        background-color: var(--text-color);
+
+        animation-delay: 2s;
+        animation: caret-blink 1s infinite;
+    }
+
+    @keyframes caret-blink {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
     }
 
     .handle {
@@ -306,12 +488,25 @@
         position: fixed;
     }
 
-    .history-wrapper{
+    .history-wrapper {
         width: 100%;
         height: 100%;
+
+        overflow: hidden;
     }
 
-    .hidden{
+    .hidden {
         display: none;
+    }
+
+    .invisible {
+        opacity: 0;
+    }
+
+    :global(.font-tester) {
+        position: absolute;
+        height: 0;
+        overflow: hidden;
+        white-space: pre;
     }
 </style>

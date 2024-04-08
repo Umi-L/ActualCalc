@@ -56,4 +56,22 @@ export const Abbreviations: Array<Abbreviation> = [
         abbreviation: "*",
         calculation: "*"
     },
+    // sin^-1
+    {
+        display: "Asin(",
+        abbreviation: "S",
+        calculation: "asin("
+    },
+    // cos^-1
+    {
+        display: "Acos(",
+        abbreviation: "C",
+        calculation: "acos("
+    },
+    // tan^-1
+    {
+        display: "Atan(",
+        abbreviation: "T",
+        calculation: "atan("
+    },
 ]

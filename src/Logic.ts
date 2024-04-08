@@ -1,6 +1,7 @@
 import {type Writable, writable} from "svelte/store";
 import {all, create, evaluate, log, typed} from "mathjs";
 import {Abbreviations} from "./Abbreviations";
+import {registerHotkeys} from "./Hotkeys";
 
 const MathEngine = create(all);
 
@@ -14,6 +15,23 @@ export interface Calculation {
 }
 
 export let history: Writable<Array<Calculation>> = writable([]);
+
+history.subscribe((value) => {
+    if (value == null || value.length === 0)
+        return
+
+    console.log("History wrote", value);
+
+    // write to local storage
+    localStorage.setItem("history", JSON.stringify(value));
+});
+
+// load history from local storage
+let historyValue = localStorage.getItem("history");
+console.log("History read", historyValue);
+if (historyValue != null) {
+    history.set(JSON.parse(historyValue));
+}
 
 angleMode.subscribe((value) => {
     angleModeValue = value;
@@ -113,7 +131,8 @@ export let prediction = writable("");
 
 let currentCalculationValue: string = "";
 
-export let caretPosition: number = 0;
+export let selectionStart: number = 0;
+export let selectionEnd: number = 0;
 
 currentCalculation.subscribe(calculationString => {
     console.log("Calculation", calculationString);
@@ -157,22 +176,39 @@ export function evaluateString(string: string) {
 export function addCharacter(character: string) {
 
     currentCalculation.update((currentCalculationValue) => {
-        return currentCalculationValue.substring(0, caretPosition) + character + currentCalculationValue.substring(caretPosition);
+        // insert character at cursor position if start and end are the same
+        return currentCalculationValue.substring(0, selectionStart) + character + currentCalculationValue.substring(selectionEnd);
     });
 
-    caretPosition++;
+    selectionStart++;
+    selectionEnd = selectionStart;
 }
 
 export function removeCharacter() {
+
+    if (selectionStart === 0) {
+        return;
+    }
+
+    if (currentCalculationValue.length === 0) {
+        return;
+    }
+
     currentCalculation.update((currentCalculationValue) => {
-        return currentCalculationValue.substring(0, caretPosition - 1) + currentCalculationValue.substring(caretPosition);
+        return currentCalculationValue.substring(0, selectionStart - 1) + currentCalculationValue.substring(selectionEnd);
     });
 
-    caretPosition--;
+    selectionStart--;
+    selectionEnd = selectionStart;
 }
 
 export function calculate() {
     let result = evaluateString(currentCalculationValue);
+
+    if (result === undefined) {
+        return;
+    }
+
     let equation = currentCalculationValue;
     let date = new Date();
 
@@ -190,7 +226,8 @@ export function clear() {
         return "";
     });
 
-    caretPosition = 0;
+    selectionStart = 0;
+    selectionEnd = 0;
 }
 
 function getEvaluationString(string: string) {
@@ -245,7 +282,7 @@ export function addBracket() {
     let closeBrackets = (evaluationString.match(/\)/g) || []).length;
 
     // if there are more open brackets than close brackets and previous character is not an opening bracket
-    if (openBrackets > closeBrackets && currentCalculationValue.charAt(caretPosition - 1) !== "(") {
+    if (openBrackets > closeBrackets && currentCalculationValue.charAt(selectionStart - 1) !== "(") {
         addCharacter(")");
     } else {
         addCharacter("(");
@@ -267,8 +304,14 @@ export function toggleAngleMode() {
 
 export function addStringAtCursor(string: string){
     currentCalculation.update((currentCalculationValue) => {
-        return currentCalculationValue.substring(0, caretPosition) + string + currentCalculationValue.substring(caretPosition);
+        return currentCalculationValue.substring(0, selectionStart) + string + currentCalculationValue.substring(selectionEnd);
     });
 
-    caretPosition += string.length;
+    selectionStart += string.length;
+    selectionEnd = selectionStart;
+}
+
+export function setSelection(start: number, end: number){
+    selectionStart = start;
+    selectionEnd = end;
 }

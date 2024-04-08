@@ -18,6 +18,7 @@
 
         // register event listener
         window.addEventListener("resize", windowResize);
+        window.addEventListener("orientationchange", windowResize);
     });
 
     function windowResize() {
@@ -57,9 +58,7 @@
             <Button icon="ph:x" col="4/5" row="-4/-5" type={ButtonType.Operator} character="*"/>
 
             <!--    Clear, (), %, divide    -->
-            <Button col="1/2" row="-5/-6" type={ButtonType.Clear} onClick={()=>{clear()}}>
-                <ACIcon/>
-            </Button>
+            <Button text="AC" col="1/2" row="-5/-6" type={ButtonType.Clear} onClick={()=>{clear()}}/>
             <Button icon="ph:brackets-round" col="2/3" row="-5/-6" type={ButtonType.Operator}
                     onClick={()=>{addBracket()}}/>
             <Button icon="ph:percent" col="3/4" row="-5/-6" type={ButtonType.Operator}/>

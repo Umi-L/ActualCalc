@@ -16,7 +16,9 @@
         angleModeValue = value.toUpperCase();
     })
 
-    function toggleVisible(){
+    let inverse = false;
+
+    function toggleVisible() {
         dropdownVisible = !dropdownVisible;
     }
 </script>
@@ -28,24 +30,28 @@
     <Button icon="ri:arrow-drop-up-line" row="1/2" col="3/4" type={ButtonType.Blank} character="^"/>
     <Button icon="ph:exclamation-mark" row="1/2" col="4/5" type={ButtonType.Blank} character="!"/>
 
-    <div class="dropdown-button-wrapper" on:click={toggleVisible}>
-        <div class="dropdown-button">
-            <div class:arrow-up={dropdownVisible} class:arrow-down={!dropdownVisible} class="arrow">
-                <Icon icon="ph:caret-up" width="70%" height="70%"/>
-            </div>
-        </div>
-    </div>
+    <Button icon={dropdownVisible ? "ph:arrow-bend-right-up" : "ph:arrow-bend-right-down"} row="1/2" col="5/6"
+            type={ButtonType.Blank} onClick={()=>{dropdownVisible=!dropdownVisible}}/>
 
     {#if dropdownVisible}
         <Button text={angleModeValue} row="2/3" col="1/2" type={ButtonType.Blank} onClick={()=>{toggleAngleMode()}}/>
-        <Button text="sin" row="2/3" col="2/3" type={ButtonType.Blank} character="s"/>
-        <Button text="cos" row="2/3" col="3/4" type={ButtonType.Blank} character="c"/>
-        <Button text="tan" row="2/3" col="4/5" type={ButtonType.Blank} character="t"/>
-
-        <Button text="INV" row="3/4" col="1/2" type={ButtonType.Blank}/>
+        <Button text="INV" row="3/4" col="1/2" type={ButtonType.Blank} onClick={()=>{inverse=!inverse}}/>
         <Button text="e" row="3/4" col="2/3" type={ButtonType.Blank} character="e"/>
+
         <Button text="ln" row="3/4" col="3/4" type={ButtonType.Blank} character="l"/>
         <Button text="log" row="3/4" col="4/5" type={ButtonType.Blank} character="g"/>
+
+        {#if !inverse}
+            <Button text="sin" row="2/3" col="2/3" type={ButtonType.Blank} character="s"/>
+            <Button text="cos" row="2/3" col="3/4" type={ButtonType.Blank} character="c"/>
+            <Button text="tan" row="2/3" col="4/5" type={ButtonType.Blank} character="t"/>
+        {:else}
+            <Button text="asin" row="2/3" col="2/3" type={ButtonType.Blank} character="S"/>
+            <Button text="acos" row="2/3" col="3/4" type={ButtonType.Blank} character="C"/>
+            <Button text="atan" row="2/3" col="4/5" type={ButtonType.Blank} character="T"/>
+        {/if}
+
+
     {/if}
 
 
@@ -54,8 +60,7 @@
 
 <style>
     .panel {
-        width: 100%;
-        height: 100%;
+
 
         display: grid;
 
@@ -63,14 +68,11 @@
         grid-template-rows: 1fr;
     }
 
-    .expanded{
+    .expanded {
         grid-template-rows: repeat(3, 1fr);
     }
 
-    .arrow{
-        width: 100%;
-        height: 100%;
-
+    .arrow {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -78,38 +80,11 @@
         transition: transform 0.3s;
     }
 
-    .arrow-up{
+    .arrow-up {
         transform: rotate(180deg);
     }
 
-    .arrow-down{
+    .arrow-down {
         transform: rotate(0deg);
-    }
-
-    .dropdown-button-wrapper{
-        width: 100%;
-        height: 100%;
-
-        grid-column: 5/6;
-        grid-row: 1/2;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .dropdown-button {
-        width: 40%;
-
-        aspect-ratio: 1/1;
-
-        border-radius: 50%;
-
-        background-color: var(--button-color);
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
     }
 </style>
