@@ -1,7 +1,6 @@
 import {type Writable, writable} from "svelte/store";
-import {all, create, evaluate, log, typed} from "mathjs";
+import {all, create, log, typed} from "mathjs";
 import {Abbreviations} from "./Abbreviations";
-import {registerHotkeys} from "./Hotkeys";
 
 const MathEngine = create(all);
 
@@ -136,6 +135,8 @@ export let selectionEnd: number = 0;
 
 currentCalculation.subscribe(calculationString => {
     console.log("Calculation", calculationString);
+    console.log("Tokenized", getTokenizedDisplayString(calculationString));
+    console.log("start, end", selectionStart, selectionEnd);
 
     // calculate prediction
     try {
@@ -263,16 +264,22 @@ function getFixedEvaluationString(string: string) {
 }
 
 export function getDisplayString(string: string) {
-    let displayString = string;
+    return getTokenizedDisplayString(string).join("");
+}
+
+export function getTokenizedDisplayString(string: string) {
+    // split string into array of characters
+    let characters = string.split("");
 
     let regex = new RegExp(Abbreviations.map(r => r.abbreviation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join("|"), "g");
 
-    displayString = displayString.replace(regex, function (match: any) {
-        let replacement = Abbreviations.find(r => r.abbreviation === match);
-        return replacement ? replacement.display : match;
+    // replace abbreviations with their display value
+    return characters.map(character => {
+        return character.replace(regex, function (match: any) {
+            let replacement = Abbreviations.find(r => r.abbreviation === match);
+            return replacement ? replacement.display : match;
+        });
     });
-
-    return displayString;
 }
 
 export function addBracket() {

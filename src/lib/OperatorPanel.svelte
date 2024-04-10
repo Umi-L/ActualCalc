@@ -38,17 +38,20 @@
         <Button text="INV" row="3/4" col="1/2" type={ButtonType.Blank} onClick={()=>{inverse=!inverse}}/>
         <Button text="e" row="3/4" col="2/3" type={ButtonType.Blank} character="e"/>
 
-        <Button text="ln" row="3/4" col="3/4" type={ButtonType.Blank} character="l"/>
-        <Button text="log" row="3/4" col="4/5" type={ButtonType.Blank} character="g"/>
-
         {#if !inverse}
             <Button text="sin" row="2/3" col="2/3" type={ButtonType.Blank} character="s"/>
             <Button text="cos" row="2/3" col="3/4" type={ButtonType.Blank} character="c"/>
             <Button text="tan" row="2/3" col="4/5" type={ButtonType.Blank} character="t"/>
+
+            <Button text="ln" row="3/4" col="3/4" type={ButtonType.Blank} character="l"/>
+            <Button text="log" row="3/4" col="4/5" type={ButtonType.Blank} character="g"/>
         {:else}
             <Button text="asin" row="2/3" col="2/3" type={ButtonType.Blank} character="S"/>
             <Button text="acos" row="2/3" col="3/4" type={ButtonType.Blank} character="C"/>
             <Button text="atan" row="2/3" col="4/5" type={ButtonType.Blank} character="T"/>
+
+            <Button text="eˣ" row="3/4" col="3/4" type={ButtonType.Blank} character="E"/>
+            <Button text="10ˣ" row="3/4" col="4/5" type={ButtonType.Blank} character="G"/>
         {/if}
 
 

@@ -2,7 +2,7 @@
     import {onMount} from "svelte";
     import {
         currentCalculation,
-        getDisplayString,
+        getDisplayString, getTokenizedDisplayString,
         prediction,
         selectionEnd,
         selectionStart,
@@ -13,7 +13,7 @@
     export let row: string;
     export let col: string;
 
-    let calculation: string;
+    let calculation: string[] = [];
     let predictiveResults: string;
 
     let mainResultsDiv: HTMLDivElement;
@@ -35,7 +35,7 @@
 
     onMount(() => {
         currentCalculation.subscribe(value => {
-            calculation = getDisplayString(value);
+            calculation = getTokenizedDisplayString(value);
 
             requestAnimationFrame(
                 () => {
@@ -205,53 +205,59 @@
         return left;
     }
 
-    function calculateTextInInputWidth(inputElement: HTMLInputElement | HTMLSpanElement, text: string): number {
+    function calculateTextInInputWidth(inputElement: HTMLElement, text: string): number {
+        let tester = document.createElement("span");
+        tester.classList.add("font-tester");
+        tester.innerText = text;
 
-        if (inputElement instanceof HTMLInputElement) {
-            let tester = document.createElement("span");
-            tester.classList.add("font-tester");
-            tester.innerText = text;
-            tester.style.fontSize = `${inputElement.style.fontSize}`;
-            tester.style.fontWeight = `${inputElement.style.fontWeight}`;
-            tester.style.fontStyle = `${inputElement.style.fontStyle}`;
-            tester.style.fontFamily = `${inputElement.style.fontFamily}`;
+        copyStyles(inputElement, tester)
 
-            document.body.appendChild(tester);
+        document.body.appendChild(tester);
 
-            let width = tester.clientWidth;
+        let width = tester.clientWidth;
 
-            document.body.removeChild(tester);
+        document.body.removeChild(tester);
 
-            return width;
-        } else if (inputElement instanceof HTMLSpanElement) {
-            let tester = document.createElement("span");
-            tester.classList.add("font-tester");
-            tester.innerText = text;
-            tester.style.fontSize = `${inputElement.style.fontSize}`;
-            tester.style.fontWeight = `${inputElement.style.fontWeight}`;
-            tester.style.fontStyle = `${inputElement.style.fontStyle}`;
-            tester.style.fontFamily = `${inputElement.style.fontFamily}`;
-
-            document.body.appendChild(tester);
-
-            let width = tester.clientWidth;
-
-            document.body.removeChild(tester);
-
-            return width;
-        }
-
-        return 0;
+        return width;
     }
 
-    function updateCaret(start: number | null, end: number | null){
+    function copyStyles(sourceElement: HTMLElement, targetElement: HTMLElement) {
+        const computedStyle = window.getComputedStyle(sourceElement);
+        const importantProperties = [];
+
+        // Loop through all computed properties
+        for (let i = 0; i < computedStyle.length; i++) {
+            const propertyName = computedStyle[i];
+            const propertyValue = computedStyle.getPropertyValue(propertyName);
+
+            // Check for "important" styles and store them separately
+            if (propertyValue.endsWith('!important')) {
+                importantProperties.push(`${propertyName}: ${propertyValue}`);
+                continue;
+            }
+
+            targetElement.style.setProperty(propertyName, propertyValue);
+        }
+
+        // Apply "important" styles last to ensure they override others
+        targetElement.setAttribute('style', `${targetElement.getAttribute('style')}; ${importantProperties.join(';')}`);
+    }
+
+    // takes position in tokenized string
+    function updateCaret(start: number | null, end: number | null) {
         if (start == null || end == null) {
             return;
         }
 
+        // set start and end to their positions in the tokenized string
         setSelection(start, end);
 
+        // set start and end to their positions in the input based on their positions in the tokenized string
+        start = calculation.slice(0, start).join("").length;
+        end = calculation.slice(0, end).join("").length;
+
         if (start != end) {
+            caretVisible = false;
             return;
         }
 
@@ -273,11 +279,109 @@
         caretDiv.style.animation = "";
     }
 
-    function setCaret(){
-        let start = mainResultsInput.selectionStart;
-        let end = mainResultsInput.selectionEnd;
+    function setCaret() {
+        let inputStart = mainResultsInput.selectionStart;
+        let inputEnd = mainResultsInput.selectionEnd;
+
+        if (inputStart == null || inputEnd == null) {
+            return;
+        }
+
+        // get the positions in the tokenized string from the positions in the input
+        let start = 0;
+        let end = 0;
+
+        let startCharacterCount = 0;
+        let endCharacterCount = 0;
+
+        // for each token
+        for (let i = 0; i < calculation.length; i++) {
+            let token = calculation[i];
+
+            let test = startCharacterCount + token.length/2;
+            startCharacterCount += token.length;
+
+            // if the start is in this token
+            if (test >= inputStart) {
+                start = i;
+                break;
+            }
+        }
+
+        // for each token
+        for (let i = 0; i < calculation.length; i++) {
+            let token = calculation[i];
+
+            let test = endCharacterCount + token.length/2;
+            endCharacterCount += token.length;
+
+            // if the end is in this token
+            if (test >= inputEnd) {
+                end = i;
+                break;
+            }
+        }
+
+        // if inputStart is at the end of the input, set start to the last token
+        if (inputStart == mainResultsInput.value.length) {
+            start = calculation.length;
+        }
+        if (inputEnd == mainResultsInput.value.length) {
+            end = calculation.length;
+        }
+
+        console.log(calculation);
+        console.log("input starts", inputStart, inputEnd);
+        console.log("calculated starts", start, end);
 
         updateCaret(start, end);
+    }
+
+    function onTapOnInput(e: TouchEvent) {
+        let x = e.touches[0].clientX;
+        let y = e.touches[0].clientY;
+
+        let rect = mainResultsInput.getBoundingClientRect();
+
+        let left = rect.left;
+        let right = rect.right;
+        let top = rect.top;
+        let bottom = rect.bottom;
+
+        if (x < left || x > right || y < top || y > bottom) {
+            return;
+        }
+
+        let width = right - left;
+        let height = bottom - top;
+
+        let xPercent = (x - left) / width;
+        let yPercent = (y - top) / height;
+
+        let position = Math.floor(xPercent * mainResultsInput.value.length);
+
+        mainResultsInput.selectionStart = position;
+        mainResultsInput.selectionEnd = position;
+
+        setCaret();
+
+        e.preventDefault()
+    }
+
+    let touchStartTime = new Date();
+
+    function onTouchStart(e: TouchEvent) {
+        touchStartTime = new Date();
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+
+        let touchEndTime = new Date();
+        let timeDiff = touchEndTime.getTime() - touchStartTime.getTime();
+
+        if (timeDiff < 200) {
+            onTapOnInput(e);
+        }
     }
 </script>
 
@@ -297,7 +401,8 @@
 
         <div class="results-wrapper main-results">
             <div class="main-results" bind:this={mainResultsDiv}>
-                <input class="results-input" bind:this={mainResultsInput} on:keypress={setCaret} on:click={setCaret} value={calculation} readonly/>
+                <input class="results-input" bind:this={mainResultsInput} on:keypress={setCaret} on:click={setCaret}
+                       value={calculation.join("")} readonly/>
                 <div class="caret" bind:this={caretDiv} class:hidden={!caretVisible}></div>
             </div>
         </div>
@@ -358,6 +463,8 @@
 
         padding: 0;
         margin: 0;
+
+        overflow-x: scroll;
     }
 
     .results-input:focus {
@@ -439,7 +546,7 @@
         padding-right: 1rem;
     }
 
-    .caret{
+    .caret {
         position: absolute;
         width: 2px;
         top: 50%;
@@ -515,9 +622,10 @@
     }
 
     :global(.font-tester) {
-        position: absolute;
-        height: 0;
-        overflow: hidden;
-        white-space: pre;
+        position: absolute !important;
+        visibility: hidden !important;
+        height: auto !important;
+        width: auto !important;
+        white-space: nowrap !important; /* Thanks to Herb Caudill comment */
     }
 </style>

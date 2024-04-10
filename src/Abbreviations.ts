@@ -74,4 +74,16 @@ export const Abbreviations: Array<Abbreviation> = [
         abbreviation: "T",
         calculation: "atan("
     },
+    // e^x
+    {
+        display: "Exp(",
+        abbreviation: "E",
+        calculation: "exp("
+    },
+    // 10^x
+    {
+        display: "10^(",
+        abbreviation: "G",
+        calculation: "10^("
+    },
 ]

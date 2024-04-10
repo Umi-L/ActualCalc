@@ -37,6 +37,8 @@ html {
     position: fixed;
 
     background-color: var(--foreground-color);
+
+    overscroll-behavior: none;
 }
 
 body {
