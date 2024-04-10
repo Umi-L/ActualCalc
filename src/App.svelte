@@ -60,7 +60,7 @@
             <Button text="AC" col="1/2" row="-5/-6" type={ButtonType.Clear} onClick={()=>{clear()}}/>
             <Button icon="ph:brackets-round" col="2/3" row="-5/-6" type={ButtonType.Operator}
                     onClick={()=>{addBracket()}}/>
-            <Button icon="ph:percent" col="3/4" row="-5/-6" type={ButtonType.Operator}/>
+            <Button icon="ph:percent" col="3/4" row="-5/-6" type={ButtonType.Operator} character="%"/>
             <Button icon="ph:divide" col="4/5" row="-5/-6" type={ButtonType.Operator} character="/"/>
 
             <OperatorPanel col="1/5" row="-6/-7"/>

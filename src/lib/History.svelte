@@ -107,6 +107,10 @@
         justify-content: space-between;
     }
 
+    p{
+        color: var(--text-color);
+    }
+
     .items{
         width: 100%;
         height: 100%;
