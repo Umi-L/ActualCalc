@@ -13,19 +13,40 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
 
-    --background-color: #191820;
-    --foreground-color: #2f2c3c;
-    --button-color: #211f2a;
-    --operator-color: #484559;
-    --clear-color: #623d4f;
-    --clear-text-color: #f3cbdc;
-    --button-text-color: #d2ced9;
-    --text-color: #e2dee3;
-    --seperator-color: #c8c4cf;
-    --equals-color: #454075;
-    --results-color: #2f2c3c;
-    --history-color: #262430;
+/* prefers dark mode or unset */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #191820;
+        --foreground-color: #2f2c3c;
+        --button-color: #211f2a;
+        --operator-color: #484559;
+        --clear-color: #623d4f;
+        --clear-text-color: #f3cbdc;
+        --button-text-color: #d2ced9;
+        --text-color: #e2dee3;
+        --seperator-color: #c8c4cf;
+        --equals-color: #454075;
+        --history-color: #262430;
+    }
+}
+
+/* prefers light mode */
+@media (prefers-color-scheme: light) {
+    :root {
+        --background-color: #fcf8ff;
+        --foreground-color: #e6e1ef;
+        --button-color: #f3eff9;
+        --operator-color: #e4dff9;
+        --clear-color: #fed8e8;
+        --clear-text-color: #301122;
+        --button-text-color: #47464f;
+        --text-color: #1b1a1e;
+        --seperator-color: #d0ced7;
+        --equals-color: #e4dfff;
+        --history-color: #eeeaf5;
+    }
 }
 
 html {
@@ -53,5 +74,7 @@ body {
 
 #app {
     width: 100dvw;
-    height: calc(100dvh - env(safe-area-inset-bottom));
+    height: 100dvh;
+
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }

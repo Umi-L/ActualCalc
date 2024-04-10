@@ -18,7 +18,21 @@
         // register event listener
         window.addEventListener("resize", windowResize);
         window.addEventListener("orientationchange", windowResize);
+
+        updateColorScheme();
+
+        window.matchMedia('(prefers-color-scheme: dark)')
+            .addEventListener('change',({ matches }) => {
+               updateColorScheme();
+            })
     });
+
+    function updateColorScheme() {
+        // get --foreground-color value
+        const foregroundColor = getComputedStyle(document.documentElement).getPropertyValue('--foreground-color');
+
+        document.querySelector('meta[name="theme-color"]')!.setAttribute('content', foregroundColor);
+    }
 
     function windowResize() {
         // calculate orientation

@@ -1,5 +1,12 @@
 <script lang="ts">
-
+    import Menu from '@smui/menu';
+    import List, {
+        Item,
+        Separator,
+        Text,
+        PrimaryText,
+        SecondaryText,
+    } from '@smui/list';
 
     import {addStringAtCursor, type Calculation, getDisplayString, history} from "../Logic";
     import {onMount} from "svelte";
@@ -10,10 +17,12 @@
 
     let itemsDiv: HTMLDivElement;
 
-    onMount(()=>{
+    let menu: Menu;
+
+    onMount(() => {
         itemsDiv.scrollTop = itemsDiv.scrollHeight;
 
-        itemsDiv.onresize = ()=> {
+        itemsDiv.onresize = () => {
             itemsDiv.scrollTop = itemsDiv.scrollHeight;
         }
     });
@@ -28,10 +37,10 @@
         });
     });
 
-    function getDaysAgo(date: string | Date): string{
+    function getDaysAgo(date: string | Date): string {
         const today = new Date();
 
-        if(typeof date === "string"){
+        if (typeof date === "string") {
             date = new Date(date);
         }
 
@@ -39,31 +48,56 @@
 
         console.log("diff", diff);
 
-        if(diff === 0){
+        if (diff === 0) {
             return "Today";
-        }else if(diff === 1){
+        } else if (diff === 1) {
             return "Yesterday";
-        }else{
+        } else {
             return `${diff} days ago`;
         }
     }
 
-    function getEpochDays(date: Date): number{
+    function getEpochDays(date: Date): number {
         return Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
     }
 </script>
-
 
 
 <div class="history">
 
     <div class="header">
         <div class="header-side-start">
+            <div class="grid-cell">
+
+                <Button icon="ph:arrow-left" col="1/2" row="1/2" type={ButtonType.Blank}
+                        onClick={()=>{}}/>
+            </div>
+
             <p>History</p>
         </div>
 
         <div class="header-side-end">
-            <Button icon="ph:dots-three-vertical" type={ButtonType.Blank} onClick={()=>{}}/>
+            <div class="grid-cell">
+                <Button icon="ph:dots-three-vertical" col="1/2" row="1/2" type={ButtonType.Blank}
+                        onClick={()=>{menu.setOpen(true);}}/>
+
+                <Menu
+                        bind:this={menu}
+                >
+                    <List>
+                        <Item>
+                            <Text>
+                                <PrimaryText>Clear History</PrimaryText>
+                            </Text>
+                        </Item>
+                        <Item>
+                            <Text>
+                                <PrimaryText>Settings</PrimaryText>
+                            </Text>
+                        </Item>
+                    </List>
+                </Menu>
+            </div>
         </div>
     </div>
 
@@ -81,8 +115,10 @@
                 </div>
             {/if}
             <div class="item">
-                <button class="calculation" on:click={()=>{addStringAtCursor(calculation.calculation)}}>{getDisplayString(calculation.calculation)}</button>
-                <button class="result" on:click={()=>{addStringAtCursor(calculation.result)}}>{calculation.result}</button>
+                <button class="calculation"
+                        on:click={()=>{addStringAtCursor(calculation.calculation)}}>{getDisplayString(calculation.calculation)}</button>
+                <button class="result"
+                        on:click={()=>{addStringAtCursor(calculation.result)}}>{calculation.result}</button>
             </div>
         {/each}
     </div>
@@ -90,10 +126,9 @@
 </div>
 
 
-
 <style>
 
-    .header{
+    .header {
         width: 100%;
 
         font-size: 1.5rem;
@@ -107,11 +142,11 @@
         justify-content: space-between;
     }
 
-    p{
+    p {
         color: var(--text-color);
     }
 
-    .items{
+    .items {
         width: 100%;
         height: 100%;
         overflow-y: scroll;
@@ -121,7 +156,7 @@
         flex-direction: column;
     }
 
-    .item{
+    .item {
         width: 100%;
         padding: 1rem;
 
@@ -132,7 +167,14 @@
         justify-content: center;
     }
 
-    .header-side-end{
+    .grid-cell {
+        display: grid;
+
+        height: 50%;
+        aspect-ratio: 1/1;
+    }
+
+    .header-side-end {
         display: flex;
         justify-content: end;
         align-items: center;
@@ -141,7 +183,7 @@
         width: 100%;
     }
 
-    .header-side-start{
+    .header-side-start {
         display: flex;
         justify-content: start;
         align-items: center;
@@ -150,12 +192,12 @@
         width: 100%;
     }
 
-    .calculation{
+    .calculation {
         font-size: 1.5em;
         color: var(--text-color);
     }
 
-    button{
+    button {
         margin: 0;
 
         border: none;
@@ -166,12 +208,12 @@
         align-items: center;
     }
 
-    .result{
+    .result {
         font-size: 1.5em;
         color: var(--button-text-color);
     }
 
-    .history{
+    .history {
         width: 100%;
         height: 100%;
         background-color: var(--history-color);
@@ -180,7 +222,7 @@
         flex-direction: column;
     }
 
-    .time-separator{
+    .time-separator {
         width: 100%;
         padding: 1rem;
 

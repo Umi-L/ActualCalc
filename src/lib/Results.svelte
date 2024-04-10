@@ -497,7 +497,7 @@
         /*  1 row takes 50% and the other 2 take 25%  */
         grid-template-rows: 30% 30% 20% 10%;
 
-        background-color: var(--results-color);
+        background-color: var(--foreground-color);
 
         flex-grow: 0;
         flex-shrink: 0;
