@@ -6,7 +6,6 @@
     import Results from "./lib/Results.svelte";
     import {addBracket, calculate, clear, removeCharacter} from "./Logic";
 
-    import ACIcon from "./lib/ACIcon.svelte";
     import OperatorPanel from "./lib/OperatorPanel.svelte";
 
     let orientation: Orientation;

@@ -124,7 +124,7 @@
         {:else if text}
             <svg viewBox="0 0 60 60" aria-hidden="true" role="img" class="svg iconify iconify--ph" width="1em"
                  height="1em" preserveAspectRatio="xMidYMin meet">
-                <text dominant-baseline="middle" text-anchor="middle" x="50%" y="50%" font-size="2rem">{text}</text>
+                <text dominant-baseline="middle" text-anchor="middle" x="50%" y="50%" transform="translate" font-size="2rem">{text}</text>
             </svg>
         {/if}
     </button>
