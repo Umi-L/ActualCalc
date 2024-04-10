@@ -465,6 +465,8 @@
         margin: 0;
 
         overflow-x: scroll;
+
+        -webkit-appearance:none;
     }
 
     .results-input:focus {

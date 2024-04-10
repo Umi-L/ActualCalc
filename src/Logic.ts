@@ -220,6 +220,10 @@ export function calculate() {
     history.update((history) => {
         return [...history, {calculation: equation, result: result.toString(), date: date}];
     });
+
+    // set selection to end of calculation
+    selectionStart = currentCalculationValue.length;
+    selectionEnd = selectionStart;
 }
 
 export function clear() {

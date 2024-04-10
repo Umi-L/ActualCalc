@@ -40,6 +40,12 @@
             calculatePadding();
         });
 
+        // on window focus recalculate border radius
+        window.addEventListener("focus", ()=>{
+            calculateBorderRadius();
+            calculatePadding();
+        });
+
         buttonElement.onresize = calculateBorderRadius;
     });
 
