@@ -170,7 +170,26 @@ export function evaluateString(string: string) {
 
     console.log("To eval", evaluationString);
 
-    return MathEngine.evaluate(evaluationString);
+    let result = MathEngine.evaluate(evaluationString);
+
+    // if is parsable as a float && isnt an integer
+    if (!isNaN(parseFloat(result)) && !Number.isInteger(result)) {
+        result = strip(result);
+    }
+
+    return result;
+}
+
+function strip(number: string) {
+    let result = (parseFloat(number).toPrecision(12));
+
+    // round by last decimal
+    result = result.replace(/(\d+\.\d*?[1-9])0+$/, "$1");
+
+    // remove trailing zeros
+    result = result.replace(/0+$/, "");
+
+    return result;
 }
 
 

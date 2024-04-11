@@ -9,6 +9,8 @@
         setSelection
     } from "../Logic";
     import History from "./History.svelte";
+    import {number} from "mathjs";
+    import {historyMenuOpen} from "../main";
 
     export let row: string;
     export let col: string;
@@ -28,6 +30,7 @@
     let caretDiv: HTMLDivElement;
     let caretVisible = false;
 
+
     let historyOpen = false;
     let dragging = false;
 
@@ -43,6 +46,12 @@
                     updateCaret(selectionStart, selectionEnd);
                 }
             );
+        })
+
+        historyMenuOpen.subscribe(value => {
+            historyOpen = value;
+
+            console.log("history open", historyOpen);
         })
 
         mainResultsInput.onscroll = () => {
@@ -119,6 +128,12 @@
 
             window.addEventListener("touchmove", onTouchMove);
             window.addEventListener("touchend", onTouchEnd);
+
+            // on window unfocus
+            window.addEventListener("blur", () => {
+                dragEnd(prevX, prevY);
+                calculateFontSize();
+            });
         })
     });
 
@@ -167,10 +182,6 @@
 
         let mainFontSize = mainResultsDiv.clientHeight;
         let predictiveFontSize = predictiveResultsDiv.clientHeight;
-
-        let depth = 0;
-
-        let mainResultsTextWidth = calculateTextInInputWidth(mainResultsInput, mainResultsInput.value);
 
         // set text to be the same width as the input
         mainResultsInput.style.fontSize = `${mainFontSize}px`;
@@ -263,9 +274,9 @@
 
         caretVisible = true;
 
-        let text = mainResultsInput.value.substring(0, start);
+        let text = getCleanedInputValue(mainResultsInput).substring(0, start);
         let textWidth = calculateTextInInputWidth(mainResultsInput, text);
-        let fullWidth = calculateTextInInputWidth(mainResultsInput, mainResultsInput.value);
+        let fullWidth = calculateTextInInputWidth(mainResultsInput, getCleanedInputValue(mainResultsInput));
         let right = fullWidth - textWidth;
 
         right -= (mainResultsInput.scrollWidth - mainResultsInput.offsetWidth) - mainResultsInput.scrollLeft;
@@ -280,8 +291,10 @@
     }
 
     function setCaret() {
-        let inputStart = mainResultsInput.selectionStart;
-        let inputEnd = mainResultsInput.selectionEnd;
+        let positions = getCleanedInputSelection(mainResultsInput);
+
+        let inputStart = positions.start;
+        let inputEnd = positions.end;
 
         if (inputStart == null || inputEnd == null) {
             return;
@@ -323,10 +336,10 @@
         }
 
         // if inputStart is at the end of the input, set start to the last token
-        if (inputStart == mainResultsInput.value.length) {
+        if (inputStart == getCleanedInputValue(mainResultsInput).length) {
             start = calculation.length;
         }
-        if (inputEnd == mainResultsInput.value.length) {
+        if (inputEnd == getCleanedInputValue(mainResultsInput).length) {
             end = calculation.length;
         }
 
@@ -358,7 +371,7 @@
         let xPercent = (x - left) / width;
         let yPercent = (y - top) / height;
 
-        let position = Math.floor(xPercent * mainResultsInput.value.length);
+        let position = Math.floor(xPercent * getCleanedInputValue(mainResultsInput).length);
 
         mainResultsInput.selectionStart = position;
         mainResultsInput.selectionEnd = position;
@@ -368,20 +381,41 @@
         e.preventDefault()
     }
 
-    let touchStartTime = new Date();
+    // Specifically for IOS as it only allows selection at the ends of "words" so we make all characters "words"
+    function addSeparators(calc: string[]): string{
+        let displayString = calc.join("");
 
-    function onTouchStart(e: TouchEvent) {
-        touchStartTime = new Date();
+        // between every char insert a no space char
+        displayString = displayString.split("").join("\u200B");
+
+        return displayString;
     }
 
-    function onTouchEnd(e: TouchEvent) {
+    function getCleanedInputValue(input: HTMLInputElement) {
+        return input.value.replace(/\u200B/g, "");
+    }
 
-        let touchEndTime = new Date();
-        let timeDiff = touchEndTime.getTime() - touchStartTime.getTime();
+    function getCleanedInputSelection(input: HTMLInputElement) {
+        let start = input.selectionStart;
+        let end = input.selectionEnd;
 
-        if (timeDiff < 200) {
-            onTapOnInput(e);
+        if (start != null) {
+            // get substring of the input value
+            let startString = input.value.substring(0, start);
+
+            // remove all zero width spaces
+            start = startString.replace(/\u200B/g, "").length;
         }
+
+        if (end != null) {
+            // get substring of the input value
+            let endString = input.value.substring(0, end);
+
+            // remove all zero width spaces
+            end = endString.replace(/\u200B/g, "").length;
+        }
+
+        return {start: start, end: end};
     }
 </script>
 
@@ -402,7 +436,7 @@
         <div class="results-wrapper main-results">
             <div class="main-results" bind:this={mainResultsDiv}>
                 <input class="results-input" bind:this={mainResultsInput} on:keypress={setCaret} on:click={setCaret}
-                       value={calculation.join("")} readonly/>
+                       value={addSeparators(calculation)} readonly/>
                 <div class="caret" bind:this={caretDiv} class:hidden={!caretVisible}></div>
             </div>
         </div>

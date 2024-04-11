@@ -12,6 +12,7 @@
     import {onMount} from "svelte";
     import Button from "./Button.svelte";
     import {ButtonType} from "../ButtonType";
+    import {historyMenuOpen} from "../main";
 
     let historyValue: Calculation[] = [];
 
@@ -70,7 +71,7 @@
             <div class="grid-cell">
 
                 <Button icon="ph:arrow-left" col="1/2" row="1/2" type={ButtonType.Blank}
-                        onClick={()=>{}}/>
+                        onClick={()=>{historyMenuOpen.set(true); historyMenuOpen.set(false);}}/>
             </div>
 
             <p>History</p>
@@ -85,12 +86,12 @@
                         bind:this={menu}
                 >
                     <List>
-                        <Item>
+                        <Item on:SMUI:action={()=>{history.set([])}}>
                             <Text>
                                 <PrimaryText>Clear History</PrimaryText>
                             </Text>
                         </Item>
-                        <Item>
+                        <Item on:SMUI:action={()=>{}}>
                             <Text>
                                 <PrimaryText>Settings</PrimaryText>
                             </Text>
