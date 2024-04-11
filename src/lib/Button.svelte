@@ -29,19 +29,19 @@
         window.addEventListener("touchcancel", () => pressed = false);
 
 
-        window.addEventListener("resize", ()=>{
+        window.addEventListener("resize", () => {
             calculateBorderRadius();
             calculatePadding();
         });
 
         // on orientation change recalculate border radius
-        window.addEventListener("orientationchange", ()=>{
+        window.addEventListener("orientationchange", () => {
             calculateBorderRadius();
             calculatePadding();
         });
 
         // on window focus recalculate border radius
-        window.addEventListener("focus", ()=>{
+        window.addEventListener("focus", () => {
             calculateBorderRadius();
             calculatePadding();
         });
@@ -52,6 +52,8 @@
     function calculatePadding() {
         const width = buttonElement.offsetWidth;
         const height = buttonElement.offsetHeight;
+
+        console.log("button?", width, height);
 
         const minSize = Math.min(width, height);
 
@@ -107,6 +109,7 @@
 </script>
 
 <div class="button-wrapper" style={`grid-column: ${col}; grid-row: ${row}`} class:blank={type === ButtonType.Blank}>
+
     <button class="button"
 
             class:normal={type === ButtonType.Normal}
@@ -125,14 +128,15 @@
 
             bind:this={buttonElement}>
 
-        {#if icon}
-            <Icon {icon} class="button-icon"/>
-        {:else if text}
-            <svg viewBox="0 0 60 60" aria-hidden="true" role="img" class="svg iconify iconify--ph" width="1em"
-                 height="1em" preserveAspectRatio="xMidYMin meet">
-                <text dominant-baseline="middle" text-anchor="middle" x="50%" y="50%" transform="translate" font-size="2rem">{text}</text>
-            </svg>
-        {/if}
+            {#if icon}
+                <Icon {icon} class="button-icon"/>
+            {:else if text}
+                <svg viewBox="0 0 60 60" aria-hidden="true" role="img" class="svg iconify iconify--ph" width="1em"
+                     height="1em" preserveAspectRatio="xMidYMid meet">
+                    <text dominant-baseline="middle" text-anchor="middle" x="50%" y="50%" transform="translate"
+                          font-size="2rem">{text}</text>
+                </svg>
+            {/if}
     </button>
 </div>
 
@@ -151,8 +155,15 @@
     }
 
     .button {
-        width: 100%;
-        height: 100%;
+
+        /*
+        stupid hack
+        https://stackoverflow.com/questions/8468066/child-inside-parent-with-min-height-100-not-inheriting-height
+        */
+        height: 1px;
+
+        min-width: 100%;
+        min-height: 100%;
 
         display: flex;
         justify-content: center;
