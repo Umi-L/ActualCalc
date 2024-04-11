@@ -32,8 +32,17 @@ if (historyValue != null) {
     history.set(JSON.parse(historyValue));
 }
 
+// load angle mode from local storage
+let angleModeValueLocal = localStorage.getItem("angleMode");
+console.log("Angle mode read", angleModeValueLocal);
+if (angleModeValueLocal != null) {
+    angleMode.set(angleModeValueLocal);
+}
+
 angleMode.subscribe((value) => {
     angleModeValue = value;
+    console.log("Angle mode", value);
+    localStorage.setItem("angleMode", value);
 });
 
 function replaceFunctions() {

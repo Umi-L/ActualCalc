@@ -47,8 +47,6 @@
 
         const diff = getEpochDays(today) - getEpochDays(date);
 
-        console.log("diff", diff);
-
         if (diff === 0) {
             return "Today";
         } else if (diff === 1) {

@@ -53,8 +53,6 @@
         const width = buttonElement.offsetWidth;
         const height = buttonElement.offsetHeight;
 
-        console.log("button?", width, height);
-
         const minSize = Math.min(width, height);
 
         // determine t value from 0 to 1 given max size of 500px

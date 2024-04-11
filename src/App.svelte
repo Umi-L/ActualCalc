@@ -6,8 +6,6 @@
     import Results from "./lib/Results.svelte";
     import {addBracket, angleMode, calculate, clear, removeCharacter, toggleAngleMode} from "./Logic";
 
-    import OperatorPanel from "./lib/OperatorPanel.svelte";
-
     let orientation: Orientation;
 
     let calcDiv: HTMLDivElement;
@@ -146,12 +144,14 @@
 
     .buttons {
 
+        transition: 0.2s;
+
         grid-row: -1/-7;
         grid-column: 1 / 5;
 
         display: grid;
         grid-template-columns: repeat(20, 1fr);
-        grid-template-rows: repeat(6, 1fr);
+        grid-template-rows: 1fr 0fr 0fr 1fr 1fr 1fr 1fr 1fr;
         padding: 0;
 
         width: 100%;
@@ -161,7 +161,7 @@
     }
 
     .expanded {
-        grid-template-rows: repeat(8, 1fr);
+        grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     }
 
     .calc {
