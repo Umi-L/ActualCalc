@@ -50,27 +50,27 @@
     });
 
     function calculatePadding() {
-        const width = buttonElement.offsetWidth;
-        const height = buttonElement.offsetHeight;
-
-        const minSize = Math.min(width, height);
-
-        // determine t value from 0 to 1 given max size of 500px
-        let t = minSize / 100;
-
-        // if > 1 clamp to 1
-        if (t > 1) {
-            t = 1;
-        }
-
-        let padding = cubicEaseOut(t) * 0.2 * minSize;
-
-        if (padding > 20) {
-            padding = 20;
-        }
-
-        // nonlinear padding
-        buttonElement.style.padding = `${padding}px`;
+        // const width = buttonElement.offsetWidth;
+        // const height = buttonElement.offsetHeight;
+        //
+        // const minSize = Math.min(width, height);
+        //
+        // // determine t value from 0 to 1 given max size of 500px
+        // let t = minSize / 100;
+        //
+        // // if > 1 clamp to 1
+        // if (t > 1) {
+        //     t = 1;
+        // }
+        //
+        // let padding = cubicEaseOut(t) * 0.2 * minSize;
+        //
+        // if (padding > 20) {
+        //     padding = 20;
+        // }
+        //
+        // // nonlinear padding
+        // buttonElement.style.padding = `${padding}px`;
     }
 
     function cubicEaseOut(t: number) {
@@ -227,9 +227,13 @@
     :global(.button-icon) {
         width: auto;
         height: 100%;
+
+        transform: scale(0.7);
     }
 
     .svg {
+        transform: scale(0.7);
+
         width: auto;
         height: 100%;
 
