@@ -57,5 +57,33 @@ export function registerHotkeys(){
         if (event.key === "ArrowRight") {
             caretRight();
         }
+
+        // !
+        if (event.key === "!") {
+            addCharacter("!");
+        }
+
+        // ^
+        if (event.key === "^") {
+            addCharacter("^");
+        }
+
+        // %
+        if (event.key === "%") {
+            addCharacter("%");
+        }
+
+        // sin, cos, tan
+        if (event.key === "s") {
+            addCharacter("s");
+        }
+
+        if (event.key === "c") {
+            addCharacter("c");
+        }
+
+        if (event.key === "t") {
+            addCharacter("t");
+        }
     });
 }
