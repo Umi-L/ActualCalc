@@ -1,11 +1,7 @@
-import {type Writable, writable} from "svelte/store";
+import {writable} from "svelte/store";
 import {all, create, log, typed} from "mathjs";
 import {Abbreviations} from "./Abbreviations";
-
-const MathEngine = create(all);
-
-export let angleMode = writable("rad");
-let angleModeValue: string = "rad";
+import {angleMode, history, trigFunctionsMaxValue, trigFunctionsPrecision} from "./Settings";
 
 export interface Calculation {
     calculation: string;
@@ -13,38 +9,59 @@ export interface Calculation {
     date: Date;
 }
 
-export let history: Writable<Array<Calculation>> = writable([]);
+const MathEngine = create(all);
 
-history.subscribe((value) => {
-    if (value == null || value.length === 0)
-        return
-
-    console.log("History wrote", value);
-
-    // write to local storage
-    localStorage.setItem("history", JSON.stringify(value));
-});
-
-// load history from local storage
-let historyValue = localStorage.getItem("history");
-console.log("History read", historyValue);
-if (historyValue != null) {
-    history.set(JSON.parse(historyValue));
-}
-
-// load angle mode from local storage
-let angleModeValueLocal = localStorage.getItem("angleMode");
-console.log("Angle mode read", angleModeValueLocal);
-if (angleModeValueLocal != null) {
-    angleMode.set(angleModeValueLocal);
-}
-
+let angleModeValue: string = "rad";
 angleMode.subscribe((value) => {
     angleModeValue = value;
     console.log("Angle mode", value);
     localStorage.setItem("angleMode", value);
 });
 
+replaceFunctions();
+
+export let currentCalculation = writable("");
+export let prediction = writable("");
+
+let currentCalculationValue: string = "";
+
+export let selectionStart: number = 0;
+export let selectionEnd: number = 0;
+
+currentCalculation.subscribe(calculationString => {
+    console.log("Calculation", calculationString);
+    console.log("Tokenized", getTokenizedDisplayString(calculationString));
+    console.log("start, end", selectionStart, selectionEnd);
+
+    // calculate prediction
+    try {
+        let predictionValue = evaluateString(calculationString);
+        let predictionString = predictionValue.toString();
+
+        if (predictionString === calculationString) {
+            prediction.update(() => {
+                return "";
+            });
+        } else if (predictionString == getFixedEvaluationString(calculationString)) {
+            prediction.update(() => {
+                return "";
+            });
+        } else {
+            prediction.update(() => {
+                return predictionString;
+            });
+        }
+    } catch (e) {
+        prediction.update(() => {
+            return "";
+        });
+    }
+
+    currentCalculationValue = calculationString;
+});
+
+
+// replace mathjs functions with typed functions to handle angle mode, log, ln, etc
 function replaceFunctions() {
 
     let replacements: any = {};
@@ -79,11 +96,32 @@ function replaceFunctions() {
             // convert from configured type of angles to radians
             switch (angleModeValue) {
                 case 'deg':
-                    return fn(x / 360 * 2 * Math.PI)
+                    let result = fn(x / 360 * 2 * Math.PI);
+
+                    if (result > trigFunctionsMaxValue) {
+                        return Infinity;
+                    }
+
+                    // round to trigFunctionsPrecision decimal places
+                    return parseFloat(result.toFixed(trigFunctionsPrecision));
                 case 'grad':
-                    return fn(x / 400 * 2 * Math.PI)
+                    let result2 = fn(x / 400 * 2 * Math.PI);
+
+                    if (result2 > trigFunctionsMaxValue) {
+                        return Infinity;
+                    }
+
+                    // round to trigFunctionsPrecision decimal places
+                    return parseFloat(result2.toFixed(trigFunctionsPrecision));
                 default:
-                    return fn(x)
+                    let result3 = fn(x);
+
+                    if (result3 > trigFunctionsMaxValue) {
+                        return Infinity;
+                    }
+
+                    // round to trigFunctionsPrecision decimal places
+                    return parseFloat(result3.toFixed(trigFunctionsPrecision));
             }
         }
 
@@ -129,50 +167,8 @@ function replaceFunctions() {
         })
     })
 
-    MathEngine.import(replacements, {override: true})
+    MathEngine.import(replacements, {override: true});
 }
-
-replaceFunctions();
-
-export let currentCalculation = writable("");
-export let prediction = writable("");
-
-let currentCalculationValue: string = "";
-
-export let selectionStart: number = 0;
-export let selectionEnd: number = 0;
-
-currentCalculation.subscribe(calculationString => {
-    console.log("Calculation", calculationString);
-    console.log("Tokenized", getTokenizedDisplayString(calculationString));
-    console.log("start, end", selectionStart, selectionEnd);
-
-    // calculate prediction
-    try {
-        let predictionValue = evaluateString(calculationString);
-        let predictionString = predictionValue.toString();
-
-        if (predictionString === calculationString) {
-            prediction.update(() => {
-                return "";
-            });
-        } else if (predictionString == getFixedEvaluationString(calculationString)) {
-            prediction.update(() => {
-                return "";
-            });
-        } else {
-            prediction.update(() => {
-                return predictionString;
-            });
-        }
-    } catch (e) {
-        prediction.update(() => {
-            return "";
-        });
-    }
-
-    currentCalculationValue = calculationString;
-});
 
 export function evaluateString(string: string) {
     let evaluationString = getFixedEvaluationString(string);
@@ -180,27 +176,28 @@ export function evaluateString(string: string) {
     console.log("To eval", evaluationString);
 
     let result = MathEngine.evaluate(evaluationString);
-
-    // if is parsable as a float && isnt an integer
-    if (!isNaN(parseFloat(result)) && !Number.isInteger(result)) {
-        result = strip(result);
+    if (result != undefined && result != "") {
+        result = MathEngine.format(result, {notation: 'fixed'})
     }
 
-    return result;
-}
-
-function strip(number: string) {
-    let result = (parseFloat(number).toPrecision(12));
-
-    // round by last decimal
-    result = result.replace(/(\d+\.\d*?[1-9])0+$/, "$1");
-
-    // remove trailing zeros
-    result = result.replace(/0+$/, "");
+    console.log("Evaluated", result);
 
     return result;
 }
 
+export function getScientificNotation(value: string) {
+    try{
+        let val = parseFloat(value);
+
+        // convert to scientific notation
+        let scientific = val.toExponential(6);
+
+        return scientific;
+    }
+    catch{
+        return value;
+    }
+}
 
 export function addCharacter(character: string) {
 
@@ -341,7 +338,7 @@ export function toggleAngleMode() {
     currentCalculation.set(tmp);
 }
 
-export function addStringAtCursor(string: string){
+export function addStringAtCursor(string: string) {
     currentCalculation.update((currentCalculationValue) => {
         return currentCalculationValue.substring(0, selectionStart) + string + currentCalculationValue.substring(selectionEnd);
     });
@@ -350,16 +347,16 @@ export function addStringAtCursor(string: string){
     selectionEnd = selectionStart;
 }
 
-export function setSelection(start: number, end: number){
+export function setSelection(start: number, end: number) {
     selectionStart = start;
     selectionEnd = end;
 }
 
-export function caretLeft(){
+export function caretLeft() {
     selectionStart--;
     selectionEnd = selectionStart;
 
-    if (selectionStart < 0){
+    if (selectionStart < 0) {
         selectionStart = 0;
     }
 
@@ -369,10 +366,10 @@ export function caretLeft(){
     currentCalculation.set(tmp);
 }
 
-export function caretRight(){
+export function caretRight() {
     selectionStart++;
 
-    if (selectionStart > currentCalculationValue.length){
+    if (selectionStart > currentCalculationValue.length) {
         selectionStart = currentCalculationValue.length;
     }
 

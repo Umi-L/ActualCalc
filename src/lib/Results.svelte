@@ -2,7 +2,7 @@
     import {onMount} from "svelte";
     import {
         currentCalculation,
-        getDisplayString, getTokenizedDisplayString,
+        getDisplayString, getScientificNotation, getTokenizedDisplayString,
         prediction,
         selectionEnd,
         selectionStart,
@@ -63,18 +63,30 @@
         })
 
         window.addEventListener("resize", () => {
-            calculateFontSize();
             updateMainPanelHeight();
+
+            requestAnimationFrame(() => {
+                calculateFontSize();
+                updateCaret(selectionStart, selectionEnd);
+            });
         });
 
         // on orientation change
         window.addEventListener("orientationchange", () => {
-            calculateFontSize();
             updateMainPanelHeight();
+
+            requestAnimationFrame(() => {
+                calculateFontSize();
+                updateCaret(selectionStart, selectionEnd);
+            });
         });
 
-        calculateFontSize();
         updateMainPanelHeight();
+
+        requestAnimationFrame(() => {
+            calculateFontSize();
+            updateCaret(selectionStart, selectionEnd);
+        });
 
         // on drag
         resultsGridDiv.addEventListener("mousedown", (e) => {
@@ -190,6 +202,16 @@
         mainFontSize = adjustFontSize(mainResultsInput, mainResultsDiv, mainFontSize, minFontSize);
 
         predictiveFontSize = adjustFontSize(predictiveResultsSpan, predictiveResultsDiv, predictiveFontSize, minFontSize);
+
+        // determine if scientific notation is needed
+        if (predictiveFontSize <= minFontSize) {
+            predictiveResults = getScientificNotation(predictiveResults);
+
+            console.log("scientific notation", predictiveResults);
+
+            // recalculate font size
+            predictiveFontSize = adjustFontSize(predictiveResultsSpan, predictiveResultsDiv, predictiveFontSize, minFontSize);
+        }
 
         // set font size to min font size if it is smaller than min font size
         mainFontSize = Math.max(mainFontSize, minFontSize);

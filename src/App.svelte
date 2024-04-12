@@ -4,7 +4,8 @@
     import {Orientation} from "./Orientation";
     import {ButtonType} from "./ButtonType";
     import Results from "./lib/Results.svelte";
-    import {addBracket, angleMode, calculate, clear, removeCharacter, toggleAngleMode} from "./Logic";
+    import {addBracket, calculate, clear, removeCharacter, toggleAngleMode} from "./Logic";
+    import {angleMode} from "./Settings";
 
     let orientation: Orientation;
 

@@ -8,11 +8,12 @@
         SecondaryText,
     } from '@smui/list';
 
-    import {addStringAtCursor, type Calculation, getDisplayString, history} from "../Logic";
+    import {addStringAtCursor, type Calculation, getDisplayString} from "../Logic";
     import {onMount} from "svelte";
     import Button from "./Button.svelte";
     import {ButtonType} from "../ButtonType";
     import {historyMenuOpen} from "../main";
+    import {history} from "../Settings";
 
     let historyValue: Calculation[] = [];
 
