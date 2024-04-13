@@ -30,7 +30,6 @@
     let caretDiv: HTMLDivElement;
     let caretVisible = false;
 
-
     let historyOpen = false;
     let dragging = false;
 
@@ -63,9 +62,11 @@
         })
 
         window.addEventListener("resize", () => {
-            updateMainPanelHeight();
+            historyOpen = false;
+            dragging = false;
 
             requestAnimationFrame(() => {
+                updateMainPanelHeight();
                 calculateFontSize();
                 updateCaret(selectionStart, selectionEnd);
             });
@@ -73,9 +74,11 @@
 
         // on orientation change
         window.addEventListener("orientationchange", () => {
-            updateMainPanelHeight();
+            historyOpen = false;
+            dragging = false;
 
             requestAnimationFrame(() => {
+                updateMainPanelHeight();
                 calculateFontSize();
                 updateCaret(selectionStart, selectionEnd);
             });

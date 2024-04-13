@@ -9,7 +9,6 @@
 
     let orientation: Orientation;
 
-    let calcDiv: HTMLDivElement;
     let dropdownVisible = false;
     let inverse = false;
 
@@ -69,8 +68,7 @@
 
 
 <div class="calc-wrapper">
-
-    <div class="calc" bind:this={calcDiv}>
+    <div class="calc">
         <Results col="1/2" row="1 / 2"/>
 
         {#if orientation === Orientation.Portrait}
