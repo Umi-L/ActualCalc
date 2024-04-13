@@ -152,7 +152,7 @@
         {:else}
             <div class="buttons buttons-horizontal">
                 <!--       RAD, Sqrt, Pi, 7, 8, 9, /, clear         -->
-                <Button text="RAD" col={calcCol1Hor} row="1/2" type={ButtonType.Blank}
+                <Button text={angleModeValue} col={calcCol1Hor} row="1/2" type={ButtonType.Blank}
                         onClick={()=>{toggleAngleMode()}}/>
                 <Button icon="tabler:square-root" col={calcCol2Hor} row="1/2" type={ButtonType.Blank} character="√"/>
                 <Button icon="ph:pi" col={calcCol3Hor} row="1/2" type={ButtonType.Blank} character="π"/>
@@ -175,9 +175,21 @@
                         onClick={()=>{addBracket()}}/>
 
                 <!--       Sin, cos, tan, 1, 2, 3, -, %         -->
-                <Button text="sin" col={calcCol1Hor} row="3/4" type={ButtonType.Blank} character="s"/>
-                <Button text="cos" col={calcCol2Hor} row="3/4" type={ButtonType.Blank} character="c"/>
-                <Button text="tan" col={calcCol3Hor} row="3/4" type={ButtonType.Blank} character="t"/>
+                {#if !inverse}
+                    <Button text="sin" col={calcCol1Hor} row="3/4" type={ButtonType.Blank} character="s"/>
+                    <Button text="cos" col={calcCol2Hor} row="3/4" type={ButtonType.Blank} character="c"/>
+                    <Button text="tan" col={calcCol3Hor} row="3/4" type={ButtonType.Blank} character="t"/>
+
+                    <Button text="ln" col={calcCol2Hor} row="4/5" type={ButtonType.Blank} character="l"/>
+                    <Button text="log" col={calcCol3Hor} row="4/5" type={ButtonType.Blank} character="g"/>
+                {:else}
+                    <Button text="asin" col={calcCol1Hor} row="3/4" type={ButtonType.Blank} character="S"/>
+                    <Button text="acos" col={calcCol2Hor} row="3/4" type={ButtonType.Blank} character="C"/>
+                    <Button text="atan" col={calcCol3Hor} row="3/4" type={ButtonType.Blank} character="T"/>
+
+                    <Button text="eˣ" col={calcCol2Hor} row="4/5" type={ButtonType.Blank} character="E"/>
+                    <Button text="10ˣ" col={calcCol3Hor} row="4/5" type={ButtonType.Blank} character="G"/>
+                {/if}
                 <Button icon="ph:number-one" col={calcCol4Hor} row="3/4" character="1"/>
                 <Button icon="ph:number-two" col={calcCol5Hor} row="3/4" character="2"/>
                 <Button icon="ph:number-three" col={calcCol6Hor} row="3/4" character="3"/>
@@ -186,8 +198,6 @@
 
                 <!--       e, ln, log, 0, ., backspace, +, =         -->
                 <Button text="e" col={calcCol1Hor} row="4/5" type={ButtonType.Blank} character="e"/>
-                <Button text="ln" col={calcCol2Hor} row="4/5" type={ButtonType.Blank} character="l"/>
-                <Button text="log" col={calcCol3Hor} row="4/5" type={ButtonType.Blank} character="g"/>
                 <Button icon="ph:number-zero" col={calcCol4Hor} row="4/5" character="0"/>
                 <Button icon="ph:dot-outline-fill" col={calcCol5Hor} row="4/5" character="."/>
                 <Button icon="ph:backspace" col={calcCol6Hor} row="4/5" onClick={()=>{removeCharacter()}}/>
