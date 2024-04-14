@@ -9,7 +9,10 @@ export interface Calculation {
     date: Date;
 }
 
-const MathEngine = create(all);
+const MathEngine = create(all, {
+    number: 'BigNumber',
+    precision: 64
+});
 
 let angleModeValue: string = "rad";
 angleMode.subscribe((value) => {
