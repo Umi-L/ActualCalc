@@ -72,6 +72,7 @@ function replaceFunctions() {
     // create ln function
     replacements["ln"] = typed("ln", {
         'number': log,
+        'BigNumber': log,
         'Array | Matrix': function (x) {
             return MathEngine.map(x, log)
         }
@@ -80,6 +81,9 @@ function replaceFunctions() {
     // make log function use base 10
     replacements["log"] = typed("log", {
         'number': function (x) {
+            return log(x) / log(10)
+        },
+        'BigNumber': function (x) {
             return log(x) / log(10)
         },
         'Array | Matrix': function (x) {
@@ -131,6 +135,7 @@ function replaceFunctions() {
         // create a typed-function which check the input types
         replacements[name] = typed(name, {
             'number': fnNumber,
+            'BigNumber': fnNumber,
             'Array | Matrix': function (x) {
                 return MathEngine.map(x, fnNumber)
             }
