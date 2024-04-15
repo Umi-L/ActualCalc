@@ -1,1 +1,1 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('https://umi-l.github.io/ActualCalc/sw.js', { scope: 'https://umi-l.github.io/ActualCalc/' })})}
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/ActualCalc/sw.js', { scope: '/ActualCalc/' })})}
