@@ -11,7 +11,7 @@ export interface Calculation {
 
 const MathEngine = create(all, {
     number: 'BigNumber',
-    precision: 64
+    precision: 64,
 });
 
 let angleModeValue: string = "rad";
@@ -238,6 +238,11 @@ export function removeCharacter() {
 
 export function calculate() {
     let result = evaluateString(currentCalculationValue);
+
+    // if result is infinity, return
+    if (result == Infinity){
+        return;
+    }
 
     if (result === undefined) {
         return;
