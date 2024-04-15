@@ -240,7 +240,7 @@ export function calculate() {
     let result = evaluateString(currentCalculationValue);
 
     // if result is infinity, return
-    if (result == Infinity){
+    if (result == Infinity || result == -Infinity || isNaN(result)) {
         return;
     }
 
