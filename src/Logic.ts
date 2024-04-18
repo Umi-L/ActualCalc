@@ -109,6 +109,10 @@ function replaceFunctions() {
                         return Infinity;
                     }
 
+                    if (result < -trigFunctionsMaxValue) {
+                        return -Infinity;
+                    }
+
                     // round to trigFunctionsPrecision decimal places
                     return parseFloat(result.toFixed(trigFunctionsPrecision));
                 case 'grad':
@@ -118,6 +122,10 @@ function replaceFunctions() {
                         return Infinity;
                     }
 
+                    if (result2 < -trigFunctionsMaxValue) {
+                        return -Infinity;
+                    }
+
                     // round to trigFunctionsPrecision decimal places
                     return parseFloat(result2.toFixed(trigFunctionsPrecision));
                 default:
@@ -125,6 +133,10 @@ function replaceFunctions() {
 
                     if (result3 > trigFunctionsMaxValue) {
                         return Infinity;
+                    }
+
+                    if (result3 < -trigFunctionsMaxValue) {
+                        return -Infinity;
                     }
 
                     // round to trigFunctionsPrecision decimal places
@@ -149,19 +161,39 @@ function replaceFunctions() {
         const fn = MathEngine[name] // the original function
 
         const fnNumber = function (x: number) {
-            const result = fn(x)
+            let result = fn(x)
 
-            if (typeof result === 'number') {
+            console.log("Result", result);
+
+
+            try {
                 // convert to radians to configured type of angles
                 switch (angleModeValue) {
                     case 'deg':
-                        return result / 2 / Math.PI * 360
+                        result = result / 2 / Math.PI * 360
+                        break;
                     case 'grad':
-                        return result / 2 / Math.PI * 400
+                        result = result / 2 / Math.PI * 400
+                        break;
                     default:
-                        return result
+                        break;
                 }
+
+                // if result is greater than trigFunctionsMaxValue, return infinity
+                if (result > trigFunctionsMaxValue) {
+                    return Infinity;
+                }
+
+                if (result < -trigFunctionsMaxValue) {
+                    return -Infinity;
+                }
+
+                // round to trigFunctionsPrecision decimal places
+                return parseFloat(result.toFixed(trigFunctionsPrecision));
+            } catch{
+                return result
             }
+
 
             return result
         }
@@ -169,6 +201,7 @@ function replaceFunctions() {
         // create a typed-function which check the input types
         replacements[name] = typed(name, {
             'number': fnNumber,
+            'BigNumber': fnNumber,
             'Array | Matrix': function (x) {
                 return MathEngine.map(x, fnNumber)
             }
@@ -194,15 +227,14 @@ export function evaluateString(string: string) {
 }
 
 export function getScientificNotation(value: string) {
-    try{
+    try {
         let val = parseFloat(value);
 
         // convert to scientific notation
         let scientific = val.toExponential(6);
 
         return scientific;
-    }
-    catch{
+    } catch {
         return value;
     }
 }
